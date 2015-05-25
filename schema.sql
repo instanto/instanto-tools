@@ -1,1483 +1,1541 @@
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
-
--- -----------------------------------------------------
--- Schema instanto
--- -----------------------------------------------------
-DROP SCHEMA IF EXISTS `instanto` ;
-CREATE SCHEMA IF NOT EXISTS `instanto` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
-USE `instanto` ;
-
--- -----------------------------------------------------
--- Table `instanto`.`rol`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`rol` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`rol` (
-  `id` VARCHAR(45) NOT NULL,
-  `display_name` VARCHAR(45) NOT NULL,
-  `description` VARCHAR(200) NOT NULL,
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`ugroup`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`ugroup` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`ugroup` (
-  `id` VARCHAR(45) NOT NULL,
-  `display_name` VARCHAR(45) NOT NULL,
-  `rol` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_ugroup_rol_idx` (`rol` ASC),
-  CONSTRAINT `fk_ugroup_rol`
-    FOREIGN KEY (`rol`)
-    REFERENCES `instanto`.`rol` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`user`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`user` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`user` (
-  `username` VARCHAR(45) NOT NULL,
-  `email` VARCHAR(45) NOT NULL,
-  `password` VARCHAR(60) NOT NULL,
-  `enabled` TINYINT(1) NOT NULL,
-  `display_name` VARCHAR(45) NOT NULL,
-  `ugroup` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`username`),
-  INDEX `fk_user_ugroup_ugroup_idx` (`ugroup` ASC),
-  CONSTRAINT `fk_user_ugroup_ugroup`
-    FOREIGN KEY (`ugroup`)
-    REFERENCES `instanto`.`ugroup` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION);
-
-
--- -----------------------------------------------------
--- Table `instanto`.`newspaper`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`newspaper` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`newspaper` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(200) NOT NULL,
-  `web` VARCHAR(200) NOT NULL,
-  `logo` VARCHAR(32) NOT NULL DEFAULT '',
-  `created_by` VARCHAR(45) NOT NULL,
-  `updated_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  `updated_at` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_newspaper_1_idx` (`created_by` ASC),
-  INDEX `fk_newspaper_2_idx` (`updated_by` ASC),
-  CONSTRAINT `fk_newspaper_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_newspaper_2`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`article`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`article` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`article` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `title` VARCHAR(200) NOT NULL,
-  `web` VARCHAR(200) NOT NULL,
-  `date` INT NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `updated_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  `updated_at` INT NOT NULL,
-  `newspaper` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_article_1_idx` (`created_by` ASC),
-  INDEX `fk_article_2_idx` (`updated_by` ASC),
-  INDEX `fk_article_3_idx` (`newspaper` ASC),
-  CONSTRAINT `fk_article_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_article_2`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_article_3`
-    FOREIGN KEY (`newspaper`)
-    REFERENCES `instanto`.`newspaper` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`status`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`status` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`status` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45) NOT NULL,
-  `description` VARCHAR(200) NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL COMMENT '	' /* comment truncated */ /*
-
-*/,
-  `updated_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  `updated_at` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_status_1_idx` (`created_by` ASC),
-  INDEX `fk_status_2_idx` (`updated_by` ASC),
-  CONSTRAINT `fk_status_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_status_2`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`member`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`member` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`member` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `first_name` VARCHAR(45) NOT NULL,
-  `last_name` VARCHAR(45) NOT NULL,
-  `degree` VARCHAR(45) CHARACTER SET 'big5' NOT NULL,
-  `year_in` INT NOT NULL,
-  `year_out` INT NOT NULL,
-  `email` VARCHAR(45) NOT NULL,
-  `cv` VARCHAR(32) NOT NULL DEFAULT '',
-  `photo` VARCHAR(32) NOT NULL DEFAULT '',
-  `created_by` VARCHAR(45) NOT NULL,
-  `updated_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  `updated_at` INT NOT NULL,
-  `primary_status` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_member_1_idx` (`created_by` ASC),
-  INDEX `fk_member_2_idx` (`updated_by` ASC),
-  INDEX `fk_member_3_idx` (`primary_status` ASC),
-  CONSTRAINT `fk_member_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_member_2`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_member_3`
-    FOREIGN KEY (`primary_status`)
-    REFERENCES `instanto`.`status` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`member_status`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`member_status` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`member_status` (
-  `member` INT NOT NULL,
-  `status` INT NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  PRIMARY KEY (`member`, `status`),
-  INDEX `fk_member_status_1_idx` (`created_by` ASC),
-  INDEX `fk_member_status_3_idx` (`status` ASC),
-  CONSTRAINT `fk_member_status_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_member_status_2`
-    FOREIGN KEY (`member`)
-    REFERENCES `instanto`.`member` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_member_status_3`
-    FOREIGN KEY (`status`)
-    REFERENCES `instanto`.`status` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`partner`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`partner` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`partner` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45) NOT NULL,
-  `web` VARCHAR(45) NOT NULL,
-  `logo` VARCHAR(32) NOT NULL DEFAULT '',
-  `same_department` TINYINT(1) NOT NULL,
-  `scope` VARCHAR(45) NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `updated_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  `updated_at` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_partner_1_idx` (`created_by` ASC),
-  INDEX `fk_partner_2_idx` (`updated_by` ASC),
-  CONSTRAINT `fk_partner_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_partner_2`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'z';
-
-
--- -----------------------------------------------------
--- Table `instanto`.`partner_member`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`partner_member` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`partner_member` (
-  `partner` INT NOT NULL,
-  `member` INT NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  PRIMARY KEY (`partner`, `member`),
-  INDEX `fk_partner_member_1_idx` (`created_by` ASC),
-  INDEX `fk_partner_member_3_idx` (`member` ASC),
-  CONSTRAINT `fk_partner_member_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_partner_member_2`
-    FOREIGN KEY (`partner`)
-    REFERENCES `instanto`.`partner` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_partner_member_3`
-    FOREIGN KEY (`member`)
-    REFERENCES `instanto`.`member` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`research_area`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`research_area` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`research_area` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(200) NOT NULL,
-  `logo` VARCHAR(32) NOT NULL DEFAULT '',
-  `created_by` VARCHAR(45) NOT NULL,
-  `updated_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  `updated_at` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_research_area_1_idx` (`created_by` ASC),
-  INDEX `fk_research_area_2_idx` (`updated_by` ASC),
-  CONSTRAINT `fk_research_area_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_research_area_2`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`funding_body`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`funding_body` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`funding_body` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(200) NOT NULL,
-  `web` VARCHAR(200) NOT NULL,
-  `scope` VARCHAR(45) NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `updated_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  `updated_at` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_funding_body_1_idx` (`created_by` ASC),
-  INDEX `fk_funding_body_2_idx` (`updated_by` ASC),
-  CONSTRAINT `fk_funding_body_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_funding_body_2`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`financed_project`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`financed_project` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`financed_project` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `title` VARCHAR(45) NOT NULL,
-  `started` INT NOT NULL,
-  `ended` INT NOT NULL,
-  `budget` INT NOT NULL,
-  `scope` VARCHAR(45) NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `updated_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  `updated_at` INT NOT NULL,
-  `primary_funding_body` INT NOT NULL,
-  `primary_record` VARCHAR(45) NOT NULL,
-  `primary_leader` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_financed_project_1_idx` (`created_by` ASC),
-  INDEX `fk_financed_project_2_idx` (`updated_by` ASC),
-  INDEX `fk_financed_project_4_idx` (`primary_leader` ASC),
-  INDEX `fk_financed_project_3_idx` (`primary_funding_body` ASC),
-  CONSTRAINT `fk_financed_project_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_financed_project_2`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_financed_project_3`
-    FOREIGN KEY (`primary_funding_body`)
-    REFERENCES `instanto`.`funding_body` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_financed_project_4`
-    FOREIGN KEY (`primary_leader`)
-    REFERENCES `instanto`.`member` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`funding_body_financed_project`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`funding_body_financed_project` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`funding_body_financed_project` (
-  `funding_body` INT NOT NULL,
-  `financed_project` INT NOT NULL,
-  `record` VARCHAR(45) NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `updated_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  `updated_at` INT NOT NULL,
-  PRIMARY KEY (`funding_body`, `financed_project`),
-  INDEX `fk_funding_body_financed_project_1_idx` (`created_by` ASC),
-  INDEX `fk_funding_body_financed_project_2_idx` (`updated_by` ASC),
-  INDEX `fk_funding_body_financed_project_4_idx` (`financed_project` ASC),
-  CONSTRAINT `fk_funding_body_financed_project_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_funding_body_financed_project_2`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_funding_body_financed_project_3`
-    FOREIGN KEY (`funding_body`)
-    REFERENCES `instanto`.`funding_body` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_funding_body_financed_project_4`
-    FOREIGN KEY (`financed_project`)
-    REFERENCES `instanto`.`financed_project` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`timestamps`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`timestamps` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`timestamps` (
-  `create_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  `update_time` TIMESTAMP NULL);
-
-
--- -----------------------------------------------------
--- Table `instanto`.`student_work_type`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`student_work_type` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`student_work_type` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45) NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `updated_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  `updated_at` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_student_work_type_1_idx` (`created_by` ASC),
-  INDEX `fk_student_work_type_2_idx` (`updated_by` ASC),
-  CONSTRAINT `fk_student_work_type_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_student_work_type_2`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`publication_type`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`publication_type` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`publication_type` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45) NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `updated_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  `updated_at` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_publication_type_1_idx` (`created_by` ASC),
-  INDEX `fk_publication_type_2_idx` (`updated_by` ASC),
-  CONSTRAINT `fk_publication_type_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_publication_type_2`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`student_work`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`student_work` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`student_work` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `title` VARCHAR(200) NOT NULL,
-  `year` INT NOT NULL,
-  `school` VARCHAR(200) NOT NULL,
-  `volume` VARCHAR(45) NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `updated_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  `updated_at` INT NOT NULL,
-  `student_work_type` INT NOT NULL,
-  `author` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_student_work_1_idx` (`created_by` ASC),
-  INDEX `fk_student_work_2_idx` (`updated_by` ASC),
-  INDEX `fk_student_work_3_idx` (`student_work_type` ASC),
-  INDEX `fk_student_work_4_idx` (`author` ASC),
-  CONSTRAINT `fk_student_work_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_student_work_2`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_student_work_3`
-    FOREIGN KEY (`student_work_type`)
-    REFERENCES `instanto`.`student_work_type` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_student_work_4`
-    FOREIGN KEY (`author`)
-    REFERENCES `instanto`.`member` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`publisher`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`publisher` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`publisher` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(200) NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `updated_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  `updated_at` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_publisher_1_idx` (`created_by` ASC),
-  INDEX `fk_publisher_2_idx` (`updated_by` ASC),
-  CONSTRAINT `fk_publisher_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_publisher_2`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`publication`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`publication` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`publication` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `title` VARCHAR(200) NOT NULL,
-  `year` INT NOT NULL,
-  `book_title` VARCHAR(45) NOT NULL,
-  `chapter` VARCHAR(45) NOT NULL,
-  `city` VARCHAR(45) NOT NULL,
-  `country` VARCHAR(45) NOT NULL,
-  `conference_name` VARCHAR(45) NOT NULL,
-  `edition` VARCHAR(45) NOT NULL,
-  `institution` VARCHAR(45) NOT NULL,
-  `isbn` VARCHAR(45) NOT NULL,
-  `issn` VARCHAR(45) NOT NULL,
-  `journal` VARCHAR(45) NOT NULL,
-  `language` VARCHAR(45) NOT NULL,
-  `nationality` VARCHAR(45) NOT NULL,
-  `number` VARCHAR(45) NOT NULL,
-  `organization` VARCHAR(45) NOT NULL,
-  `pages` VARCHAR(45) NOT NULL,
-  `school` VARCHAR(45) NOT NULL COMMENT '	',
-  `series` VARCHAR(45) NOT NULL,
-  `volume` VARCHAR(45) NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `updated_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  `updated_at` INT NOT NULL,
-  `publication_type` INT NOT NULL,
-  `publisher` INT NOT NULL,
-  `primary_author` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_publication_1_idx` (`created_by` ASC),
-  INDEX `fk_publication_2_idx` (`updated_by` ASC),
-  INDEX `fk_publication_3_idx` (`publication_type` ASC),
-  INDEX `fk_publication_4_idx` (`publisher` ASC),
-  INDEX `fk_publication_5_idx` (`primary_author` ASC),
-  CONSTRAINT `fk_publication_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_publication_2`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_publication_3`
-    FOREIGN KEY (`publication_type`)
-    REFERENCES `instanto`.`publication_type` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_publication_4`
-    FOREIGN KEY (`publisher`)
-    REFERENCES `instanto`.`publisher` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_publication_5`
-    FOREIGN KEY (`primary_author`)
-    REFERENCES `instanto`.`member` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`research_line`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`research_line` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`research_line` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `title` VARCHAR(200) NOT NULL,
-  `finished` TINYINT(1) NOT NULL,
-  `description` TEXT NOT NULL,
-  `logo` VARCHAR(32) NOT NULL DEFAULT '',
-  `created_by` VARCHAR(45) NOT NULL,
-  `updated_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  `updated_at` INT NOT NULL,
-  `primary_research_area` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_research_line_1_idx` (`created_by` ASC),
-  INDEX `fk_research_line_2_idx` (`updated_by` ASC),
-  INDEX `fk_research_line_3_idx` (`primary_research_area` ASC),
-  CONSTRAINT `fk_research_line_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_research_line_2`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_research_line_3`
-    FOREIGN KEY (`primary_research_area`)
-    REFERENCES `instanto`.`research_area` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`category`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`category` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`category` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45) NOT NULL,
-  `description` VARCHAR(45) NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `updated_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  `updated_at` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_resource_type_1_idx` (`created_by` ASC),
-  INDEX `fk_resource_type_2_idx` (`updated_by` ASC),
-  CONSTRAINT `fk_resource_type_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_resource_type_2`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`resource`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`resource` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`resource` (
-  `filename_hash` VARCHAR(32) NOT NULL,
-  `filename` VARCHAR(45) NOT NULL,
-  `mime_type` VARCHAR(45) NOT NULL,
-  `size` INT NOT NULL,
-  `private` TINYINT(1) NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `updated_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  `updated_at` INT NOT NULL,
-  INDEX `fk_resource_1_idx` (`created_by` ASC),
-  INDEX `fk_resource_2_idx` (`updated_by` ASC),
-  PRIMARY KEY (`filename_hash`),
-  CONSTRAINT `fk_resource_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_resource_2`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`research_area_research_line`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`research_area_research_line` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`research_area_research_line` (
-  `research_area` INT NOT NULL,
-  `research_line` INT NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  PRIMARY KEY (`research_area`, `research_line`),
-  INDEX `fk_research_area_research_line_1_idx` (`created_by` ASC),
-  INDEX `fk_research_area_research_line_3_idx` (`research_line` ASC),
-  CONSTRAINT `fk_research_area_research_line_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_research_area_research_line_2`
-    FOREIGN KEY (`research_area`)
-    REFERENCES `instanto`.`research_area` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_research_area_research_line_3`
-    FOREIGN KEY (`research_line`)
-    REFERENCES `instanto`.`research_line` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`member_publication`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`member_publication` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`member_publication` (
-  `member` INT NOT NULL,
-  `publication` INT NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  PRIMARY KEY (`member`, `publication`),
-  INDEX `fk_member_publication_1_idx` (`created_by` ASC),
-  INDEX `fk_member_publication_3_idx` (`publication` ASC),
-  CONSTRAINT `fk_member_publication_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_member_publication_2`
-    FOREIGN KEY (`member`)
-    REFERENCES `instanto`.`member` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_member_publication_3`
-    FOREIGN KEY (`publication`)
-    REFERENCES `instanto`.`publication` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`research_line_article`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`research_line_article` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`research_line_article` (
-  `research_line` INT NOT NULL,
-  `article` INT NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  PRIMARY KEY (`research_line`, `article`),
-  INDEX `fk_research_line_article_1_idx` (`created_by` ASC),
-  INDEX `fk_research_line_article_3_idx` (`article` ASC),
-  CONSTRAINT `fk_research_line_article_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_research_line_article_2`
-    FOREIGN KEY (`research_line`)
-    REFERENCES `instanto`.`research_line` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_research_line_article_3`
-    FOREIGN KEY (`article`)
-    REFERENCES `instanto`.`article` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`research_line_partner`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`research_line_partner` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`research_line_partner` (
-  `research_line` INT NOT NULL,
-  `partner` INT NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  PRIMARY KEY (`research_line`, `partner`),
-  INDEX `fk_research_line_partner_1_idx` (`created_by` ASC),
-  INDEX `fk_research_line_partner_3_idx` (`partner` ASC),
-  CONSTRAINT `fk_research_line_partner_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_research_line_partner_2`
-    FOREIGN KEY (`research_line`)
-    REFERENCES `instanto`.`research_line` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_research_line_partner_3`
-    FOREIGN KEY (`partner`)
-    REFERENCES `instanto`.`partner` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`research_line_financed_project`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`research_line_financed_project` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`research_line_financed_project` (
-  `research_line` INT NOT NULL,
-  `financed_project` INT NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  PRIMARY KEY (`research_line`, `financed_project`),
-  INDEX `fk_research_line_financed_project_1_idx` (`created_by` ASC),
-  INDEX `fk_research_line_financed_project_3_idx` (`financed_project` ASC),
-  CONSTRAINT `fk_research_line_financed_project_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_research_line_financed_project_2`
-    FOREIGN KEY (`research_line`)
-    REFERENCES `instanto`.`research_line` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_research_line_financed_project_3`
-    FOREIGN KEY (`financed_project`)
-    REFERENCES `instanto`.`financed_project` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`financed_project_member`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`financed_project_member` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`financed_project_member` (
-  `financed_project` INT NOT NULL,
-  `member` INT NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  PRIMARY KEY (`financed_project`, `member`),
-  INDEX `fk_financed_project_member_1_idx` (`created_by` ASC),
-  INDEX `fk_financed_project_member_3_idx` (`member` ASC),
-  CONSTRAINT `fk_financed_project_member_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_financed_project_member_2`
-    FOREIGN KEY (`financed_project`)
-    REFERENCES `instanto`.`financed_project` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_financed_project_member_3`
-    FOREIGN KEY (`member`)
-    REFERENCES `instanto`.`member` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`financed_project_leader`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`financed_project_leader` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`financed_project_leader` (
-  `financed_project` INT NOT NULL,
-  `member` INT NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  PRIMARY KEY (`financed_project`, `member`),
-  INDEX `fk_financed_project_leader_1_idx` (`created_by` ASC),
-  INDEX `fk_financed_project_leader_3_idx` (`member` ASC),
-  CONSTRAINT `fk_financed_project_leader_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_financed_project_leader_2`
-    FOREIGN KEY (`financed_project`)
-    REFERENCES `instanto`.`financed_project` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_financed_project_leader_3`
-    FOREIGN KEY (`member`)
-    REFERENCES `instanto`.`member` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`research_line_member`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`research_line_member` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`research_line_member` (
-  `research_line` INT NOT NULL,
-  `member` INT NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  PRIMARY KEY (`research_line`, `member`),
-  INDEX `fk_research_line_member_1_idx` (`created_by` ASC),
-  INDEX `fk_research_line_member_3_idx` (`member` ASC),
-  CONSTRAINT `fk_research_line_member_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_research_line_member_2`
-    FOREIGN KEY (`research_line`)
-    REFERENCES `instanto`.`research_line` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_research_line_member_3`
-    FOREIGN KEY (`member`)
-    REFERENCES `instanto`.`member` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`research_line_student_work`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`research_line_student_work` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`research_line_student_work` (
-  `research_line` INT NOT NULL,
-  `student_work` INT NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  PRIMARY KEY (`research_line`, `student_work`),
-  INDEX `fk_research_line_student_work_1_idx` (`created_by` ASC),
-  INDEX `fk_research_line_student_work_3_idx` (`student_work` ASC),
-  CONSTRAINT `fk_research_line_student_work_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_research_line_student_work_2`
-    FOREIGN KEY (`research_line`)
-    REFERENCES `instanto`.`research_line` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_research_line_student_work_3`
-    FOREIGN KEY (`student_work`)
-    REFERENCES `instanto`.`student_work` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`research_line_publication`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`research_line_publication` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`research_line_publication` (
-  `research_line` INT NOT NULL,
-  `publication` INT NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  PRIMARY KEY (`research_line`, `publication`),
-  INDEX `fk_research_line_publication_1_idx` (`created_by` ASC),
-  INDEX `fk_research_line_publication_3_idx` (`publication` ASC),
-  CONSTRAINT `fk_research_line_publication_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_research_line_publication_2`
-    FOREIGN KEY (`research_line`)
-    REFERENCES `instanto`.`research_line` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_research_line_publication_3`
-    FOREIGN KEY (`publication`)
-    REFERENCES `instanto`.`publication` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`research_line_resource`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`research_line_resource` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`research_line_resource` (
-  `research_line` INT NOT NULL,
-  `resource` VARCHAR(32) NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  PRIMARY KEY (`research_line`, `resource`),
-  INDEX `fk_research_line_resource_1_idx` (`created_by` ASC),
-  INDEX `fk_research_line_resource_3_idx` (`resource` ASC),
-  CONSTRAINT `fk_research_line_resource_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_research_line_resource_2`
-    FOREIGN KEY (`research_line`)
-    REFERENCES `instanto`.`research_line` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_research_line_resource_3`
-    FOREIGN KEY (`resource`)
-    REFERENCES `instanto`.`resource` (`filename_hash`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`access_log`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`access_log` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`access_log` (
-  `when` INT NOT NULL,
-  `username` VARCHAR(45) NOT NULL,
-  `app` VARCHAR(3) NOT NULL,
-  `ip` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`when`, `username`, `ip`, `app`),
-  CONSTRAINT `fk_access_log_1`
-    FOREIGN KEY (`username`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`permission`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`permission` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`permission` (
-  `id` VARCHAR(64) NOT NULL,
-  `display_name` VARCHAR(100) NOT NULL,
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`rol_permission`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`rol_permission` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`rol_permission` (
-  `rol` VARCHAR(45) NOT NULL,
-  `permission` VARCHAR(64) NOT NULL,
-  PRIMARY KEY (`rol`, `permission`),
-  INDEX `fk_rol_permission_3_idx` (`permission` ASC),
-  CONSTRAINT `fk_rol_permission_2`
-    FOREIGN KEY (`rol`)
-    REFERENCES `instanto`.`rol` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_rol_permission_3`
-    FOREIGN KEY (`permission`)
-    REFERENCES `instanto`.`permission` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`log`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`log` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`log` (
-  `when` INT NOT NULL,
-  `type` VARCHAR(45) NOT NULL,
-  `who` VARCHAR(45) NOT NULL,
-  `app` VARCHAR(45) NOT NULL,
-  `what` TEXT NOT NULL)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`category_resource`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`category_resource` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`category_resource` (
-  `category` INT NOT NULL,
-  `resource` VARCHAR(45) NOT NULL,
-  `created_by` VARCHAR(45) NOT NULL,
-  `created_at` INT NOT NULL,
-  PRIMARY KEY (`category`, `resource`),
-  INDEX `fk_category_resource_1_idx` (`created_by` ASC),
-  INDEX `fk_category_resource_3_idx` (`resource` ASC),
-  CONSTRAINT `fk_category_resource_1`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `instanto`.`user` (`username`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_category_resource_2`
-    FOREIGN KEY (`category`)
-    REFERENCES `instanto`.`category` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `fk_category_resource_3`
-    FOREIGN KEY (`resource`)
-    REFERENCES `instanto`.`resource` (`filename_hash`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`config`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`config` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`config` (
-  `config_key` VARCHAR(45) NOT NULL,
-  `config_value` VARCHAR(200) NOT NULL,
-  PRIMARY KEY (`config_key`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `instanto`.`notification`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `instanto`.`notification` ;
-
-CREATE TABLE IF NOT EXISTS `instanto`.`notification` (
-  `1` INT NOT NULL AUTO_INCREMENT,
-  `message` VARCHAR(45) NULL,
-  PRIMARY KEY (`1`))
-ENGINE = InnoDB;
-
-
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
-
--- -----------------------------------------------------
--- Data for table `instanto`.`rol`
--- -----------------------------------------------------
-START TRANSACTION;
+-- phpMyAdmin SQL Dump
+-- version 4.2.6deb1
+-- http://www.phpmyadmin.net
+--
+-- Host: localhost
+-- Generation Time: May 25, 2015 at 01:19 PM
+-- Server version: 5.5.41-0ubuntu0.14.10.1
+-- PHP Version: 5.5.12-2ubuntu4.2
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+
+--
+-- Database: `instanto`
+--
+CREATE DATABASE IF NOT EXISTS `instanto` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 USE `instanto`;
-INSERT INTO `instanto`.`rol` (`id`, `display_name`, `description`) VALUES ('root_rol', 'Root rol', 'Root privileges');
 
-COMMIT;
+-- --------------------------------------------------------
 
+--
+-- Table structure for table `article`
+--
 
--- -----------------------------------------------------
--- Data for table `instanto`.`ugroup`
--- -----------------------------------------------------
-START TRANSACTION;
-USE `instanto`;
-INSERT INTO `instanto`.`ugroup` (`id`, `display_name`, `rol`) VALUES ('root_group', 'Root group', 'root_rol');
+DROP TABLE IF EXISTS `article`;
+CREATE TABLE IF NOT EXISTS `article` (
+`id` int(11) NOT NULL,
+  `title` varchar(200) NOT NULL,
+  `web` varchar(200) NOT NULL,
+  `date` int(11) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `updated_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL,
+  `newspaper` int(11) NOT NULL
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=194 ;
 
-COMMIT;
+--
+-- RELATIONS FOR TABLE `article`:
+--   `created_by`
+--       `user` -> `username`
+--   `updated_by`
+--       `user` -> `username`
+--   `newspaper`
+--       `newspaper` -> `id`
+--
 
+-- --------------------------------------------------------
 
--- -----------------------------------------------------
--- Data for table `instanto`.`user`
--- -----------------------------------------------------
-START TRANSACTION;
-USE `instanto`;
-INSERT INTO `instanto`.`user` (`username`, `email`, `password`, `enabled`, `display_name`, `ugroup`) VALUES ('root', 'root@instanto.com', 'root', 1, 'Root user', 'root_group');
-INSERT INTO `instanto`.`user` (`username`, `email`, `password`, `enabled`, `display_name`, `ugroup`) VALUES ('hugo', 'hugo@instanto.com', 'hugo', 1, 'Hugo González', 'root_group');
+--
+-- Table structure for table `category`
+--
 
-COMMIT;
+DROP TABLE IF EXISTS `category`;
+CREATE TABLE IF NOT EXISTS `category` (
+`id` int(11) NOT NULL,
+  `name` varchar(45) NOT NULL,
+  `description` varchar(45) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `updated_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
+--
+-- RELATIONS FOR TABLE `category`:
+--   `created_by`
+--       `user` -> `username`
+--   `updated_by`
+--       `user` -> `username`
+--
 
--- -----------------------------------------------------
--- Data for table `instanto`.`permission`
--- -----------------------------------------------------
-START TRANSACTION;
-USE `instanto`;
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('article_create', 'Create article');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('article_update_mine', 'Update article created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('article_delete_mine', 'Delete article created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('newspaper_create', 'Create newspaper');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('newspaper_update_mine', 'Update newspaper created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('newspaper_delete_mine', 'Delete newspaper created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('partner_create', 'Create partner');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('partner_update_mine', 'Update partner created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('partner_delete_mine', 'Delete partner created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_area_create', 'Create research area');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_area_update_mine', 'Update research area created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_area_delete_mine', 'Delete research area created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('funding_body_create', 'Create funding body');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('funding_body_update_mine', 'Update funding body created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('funding_body_delete_mine', 'Delete funding body created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_create', 'Create financed project');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_update_mine', 'Update financed project created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_delete_mine', 'Delete financed project created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('status_create', 'Create status');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('status_update_mine', 'Update status created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('status_delete_mine', 'Delete status created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_create', 'Create member');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_update_mine', 'Update member created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_delete_mine', 'Delete member created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('student_work_create', 'Create student work');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('student_work_update_mine', 'Update student work created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('student_work_delete_mine', 'Delete student work created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('student_work_type_create', 'Create student work type');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('student_work_type_update_mine', 'Update student work type created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('student_work_type_delete_mine', 'Delete student work type created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('publication_type_create', 'Create publication type');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('publication_type_update_mine', 'Update publication type created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('publication_type_delete_mine', 'Delete publication type created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('publisher_create', 'Create publisher');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('publisher_update_mine', 'Update publisher created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('publisher_delete_mine', 'Delete publisher created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('publication_create', 'Create publication');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('publication_update_mine', 'Update publication created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('publication_delete_mine', 'Delete publication created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_create', 'Create research line');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_update_mine', 'Update research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_delete_mine', 'Delete research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('resource_type_create', 'Create resource type');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('resource_type_update_mine', 'Update resource type created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('resource_type_delete_mine', 'Delete resource type created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('resource_create', 'Create reosource');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('resource_update_mine', 'Update resource created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('resource_delete_mine', 'Delete resource created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('partner_member_add_mine_mine', 'Add members created by me to a partner created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('partner_member_remove_mine_mine', 'Remove members created by me from a partner created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_status_add_mine_mine', 'Add status created by me to a member created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_status_remove_mine_mine', 'Remove status created by me from a member created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('funding_body_financed_project_add_mine_mine', 'Add financed projects created by me to a funding body created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('funding_body_financed_project_remove_mine_mine', 'Remove financed projects created by me from a funding body created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_area_research_line_add_mine_mine', 'Add research lines created by me to a research area created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_area_research_line_remove_mine_mine', 'Remove research lines created by me from a research area created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_publication_add_mine_mine', 'Add publications created by me to a member created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_publication_remove_mine_mine', 'Remove publications created by me from a member created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_article_add_mine_mine', 'Add articles created by me to a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_article_remove_mine_mine', 'Remove articles created by me from a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_partner_add_mine_mine', 'Add partners created by me to a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_partner_remove_mine_mine', 'Remove partners created by me from a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_financed_project_add_mine_mine', 'Add financed projects created by me to a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_financed_project_remove_mine_mine', 'Remove financed projects created by me from a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_member_add_mine_mine', 'Add members created by me to a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_member_remove_mine_mine', 'Remove members created by me from a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_member_add_mine_mine', 'Add members created by me to a financed project created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_member_remove_mine_mine', 'Remove members created by me from a financed project created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_leader_add_mine_mine', 'Add leaders created by me to a financed project created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_leader_remove_mine_mine', 'Remove leaders created by me from a financed project created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_student_work_add_mine_mine', 'Add student works created by me to a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_student_work_remove_mine_mine', 'Remove student workscreated by me  from a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_publication_add_mine_mine', 'Add publications created by me to a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_publication_remove_mine_mine', 'Remove publications created by me from a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_resource_add_mine_mine', 'Add resources created by me to a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_resource_remove_mine_mine', 'Remove resources created by me from a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('funding_body_financed_project_update_mine_mine', 'Update the record of the funding if the funding body and the financed project are mine');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('log_view', 'View the system log');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('user_create', 'Create user');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('user_update_mine', 'Update user created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('user_disable_mine', 'Disable user created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('rol_create', 'Create rol');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('rol_update_mine', 'Update rol created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('rol_delete_mine', 'Delete rol created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('rol_permission_add_mine', 'Add permissions to a rol created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('rol_permission_remove_mine', 'Remove permissions from a rol created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('group_create', 'Create group');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('group_update_mine', 'Update group created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('group_delete_mine', 'Delete group created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('user_enable_mine', 'Enable user created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('group_user_add_mine_mine', 'Add users created by me to a group created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('group_user_remove_mine_mine', 'Remove users created by me from a group created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('article_update_other', 'Update article created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('article_delete_other', 'Delete article created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_update_other', 'Update financed project created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_delete_other', 'Delete financed project created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('funding_body_update_other', 'Update funding body created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('funding_body_delete_other', 'Delete funding body created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('group_update_other', 'Update group created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('group_delete_other', 'Delete group created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_update_other', 'Update member created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_delete_other', 'Delete member created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('newspaper_update_other', 'Update newspaper created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('newspaper_delete_other', 'Delete newspaper created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('partner_update_other', 'Update newspaper created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('partner_delete_other', 'Delete newspaper created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('publication_update_other', 'Update publication created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('publication_delete_other', 'Delete publication created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('publication_type_update_other', 'Update publication created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('publication_type_delete_other', 'Delete publication created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('publisher_update_other', 'Update publisher created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('publisher_delete_other', 'Delete publisher created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('resource_update_other', 'Update resource created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('resource_delete_other', 'Delete resource created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_area_update_other', 'Update research area created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_area_delete_other', 'Delete research area created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_update_other', 'Update research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_delete_other', 'Delete research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('resource_type_update', 'Update resource type created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('resource_type_delete', 'Delete resource type created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('rol_update_other', 'Update rol created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('rol_delete_other', 'Delete rol created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('status_update_other', 'Update status created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('status_delete_other', 'Delete status created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('student_work_update_other', 'Update student work created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('student_work_delete_other', 'Delete student work created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('student_work_type_update_other', 'Update student work type created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('student_work_type_delete_other', 'Delete student work type created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('user_update_other', 'Update user created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('user_disable_other', 'Disable user created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('user_enable_other', 'Enable user created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_leader_add_mine_other', 'Add leaders created by other to a financed project created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_leader_add_other_mine', 'Add leaders created by me to a financed project created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_leader_add_other_other', 'Add leaders created by other to a financed project created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_leader_remove_mine_other', 'Remove members created by other from a financed project created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_leader_remove_other_mine', 'Remove members created by other from a financed project created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_leader_remove_other_other', 'Remove members created by other from a financed project created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_member_add_mine_other', 'Add members created by other to a financed project created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_member_add_other_mine', 'Add members created by me to a financed project created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_member_add_other_other', 'Add members created by other to a financed project created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_member_remove_mine_other', 'Remove members created by other from a financed project created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_member_remove_other_mine', 'Remove members created by me from a financed project created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('financed_project_member_remove_other_other', 'Remove members created by other from a financed project created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('funding_body_financed_project_mine_other', 'Add financed projects created by other to a funding body created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('funding_body_financed_project_other_mine', 'Add financed projects created by me to a funding body created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('funding_body_financed_project_other_other', 'Add financed projects created by other to a funding body created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('funding_body_financed_project_remove_mine_other', 'Remove financed projects created by other from a funding body created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('funding_body_financed_project_remove_other_mine', 'Remove financed projects created by me from a funding body created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('funding_body_financed_project_remove_other_other', 'Remove financed projects created by other from a funding body created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('group_user_add_mine_other', 'Add users created by other to a group created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('group_user_add_other_mine', 'Add users created by me to a group created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('group_user_add_other_other', 'Add users created by other to a group created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('group_user_remove_mine_other', 'Remove users created by other from a group created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('group_user_remove_other_mine', 'Remove users created by other from a group created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('group_user_remove_other_other', 'Remove users created by other from a group created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_publication_add_mine_other', 'Add publications created by other to a member created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_publication_add_other_mine', 'Add publications created by me to a member created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_publication_add_other_other', 'Add publications created by other to a member created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_publication_remove_mine_other', 'Remove publications created by other from a member created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_publication_remove_other_mine', 'Remove publications created by me from a member created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_publication_remove_other_other', 'Remove publications created by other from a member created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_status_add_mine_other', 'Add statuses created by other to a member created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_status_add_other_mine', 'Add statuses created by me to a member created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_status_add_other_other', 'Add statuses created by other to a member created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_status_remove_mine_other', 'Remove statuses created by other from a member created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_status_remove_other_mine', 'Remove statuses created by me from a member created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('member_status_remove_other_other', 'Remove statuses created by other from a member created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('partner_member_add_mine_other', 'Add members created by other to a partner created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('partner_member_add_other_mine', 'Add members created by me to a partner created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('partner_member_add_other_other', 'Add members created by other to a partner created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('partner_member_remove_mine_other', 'Remove members created by other from a partner created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('partner_member_remove_other_mine', 'Remove members created by me from a partner created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('partner_member_remove_other_other', 'Remove members created by other from a partner created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_area_research_line_add_mine_other', 'Add research lines created by other to a research area created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_area_research_line_add_other_mine', 'Add research lines created by me to a research area created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_area_research_line_add_other_other', 'Add research lines created by other to a research area created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_area_research_line_remove_mine_other', 'Remove research lines created by other from a research area created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_area_research_line_remove_other_mine', 'Remove research lines created by me from a research area created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_area_research_line_remove_other_other', 'Remove research lines created by other from a research area created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_article_add_mine_other', 'Add articles created by other to a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_article_add_other_mine', 'Add articles created by me to a research linecreated by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_article_add_other_other', 'Add articles created by other to a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_article_remove_mine_other', 'Remove articles created by other from a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_article_remove_other_mine', 'Remove articles created by me from a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_article_remove_other_other', 'Remove articles created by other from a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_financed_project_add_mine_other', 'Add financed projects created by other to a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_financed_project_add_other_mine', 'Add financed projects created by me to a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_financed_project_add_other_other', 'Add financed projects created by other to a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_financed_project_remove_mine_other', 'Remove financed projects created by other from a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_financed_project_remove_other_mine', 'Remove financed projects created by me from a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_financed_project_remove_other_other', 'Remove financed projects created by other from a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_member_add_mine_other', 'Add members created by other to a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_member_add_other_mine', 'Add members created by me to a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_member_add_other_other', 'Add members created by other to a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_member_remove_mine_other', 'Remove members created by other from a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_member_remove_other_mien', 'Remove members created by me from a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_member_remove_other_other', 'Remove members created by other from a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_partner_add_mine_other', 'Add partners created by other from a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_partner_add_other_mine', 'Add partners created by me from a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_partner_add_other_other', 'Add partners created by other from a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_partner_remove_mine_other', 'Remove partners created by other from a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_partner_remove_other_mine', 'Remove partners created by me from a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_partner_remove_other_other', 'Remove partners created by other from a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_publication_add_mine_other', 'Add publications created by other to a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_publication_add_other_mine', 'Add publications created by me to a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_publication_add_other_other', 'Add publication created by other to a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_publication_remove_mine_other', 'Remove publications created by other from a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_publication_remove_other_mine', 'Remove publications created by me from a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_publication_remove_other_other', 'Remove publications created by other from a research line creared by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_resource_add_mine_other', 'Add resources created by other to a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_resource_add_other_mine', 'Add resources created by me to a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_resource_add_other_other', 'Add resources created by other to a reseach line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_resouce_remove_mine_other', 'Remove resources created by other from a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_resource_remove_other_mine', 'Remove resources created by me from a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_resource_remove_other_other', 'Remove resources created by other from a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_student_work_add_mine_other', 'Add student works created by other to a reseach line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_student_work_add_other_mine', 'Add student works created by me to a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_student_work_add_other_other', 'Add student works created by other to a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_student_work_remove_mine_other', 'Remove student works created by other from a research line created by me');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_student_work_remove_other_mine', 'Remove student works created by me from a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('research_line_student_work_remove_other_other', 'Remove student works created by other from a research line created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('rol_permission_add_other', 'Add permissions to a rol created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('rol_permission_remove_other', 'Remove permissions from a rol created by other');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('user_disable_itself', 'Disable the user logged in only');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('user_update_itself', 'Update the user logged in only');
-INSERT INTO `instanto`.`permission` (`id`, `display_name`) VALUES ('access_log_view', 'View the access log');
+-- --------------------------------------------------------
 
-COMMIT;
+--
+-- Table structure for table `category_resource`
+--
+
+DROP TABLE IF EXISTS `category_resource`;
+CREATE TABLE IF NOT EXISTS `category_resource` (
+  `category` int(11) NOT NULL,
+  `resource` varchar(45) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `category_resource`:
+--   `created_by`
+--       `user` -> `username`
+--   `category`
+--       `category` -> `id`
+--   `resource`
+--       `resource` -> `filename_hash`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `config`
+--
+
+DROP TABLE IF EXISTS `config`;
+CREATE TABLE IF NOT EXISTS `config` (
+  `config_key` varchar(45) NOT NULL,
+  `config_value` varchar(200) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `financed_project`
+--
+
+DROP TABLE IF EXISTS `financed_project`;
+CREATE TABLE IF NOT EXISTS `financed_project` (
+`id` int(11) NOT NULL,
+  `title` varchar(45) NOT NULL,
+  `started` int(11) NOT NULL,
+  `ended` int(11) NOT NULL,
+  `budget` int(11) NOT NULL,
+  `scope` varchar(45) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `updated_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL,
+  `primary_funding_body` int(11) NOT NULL,
+  `primary_record` varchar(45) NOT NULL,
+  `primary_leader` int(11) NOT NULL
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=9 ;
+
+--
+-- RELATIONS FOR TABLE `financed_project`:
+--   `created_by`
+--       `user` -> `username`
+--   `updated_by`
+--       `user` -> `username`
+--   `primary_funding_body`
+--       `funding_body` -> `id`
+--   `primary_leader`
+--       `member` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `financed_project_leader`
+--
+
+DROP TABLE IF EXISTS `financed_project_leader`;
+CREATE TABLE IF NOT EXISTS `financed_project_leader` (
+  `financed_project` int(11) NOT NULL,
+  `member` int(11) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `financed_project_leader`:
+--   `created_by`
+--       `user` -> `username`
+--   `financed_project`
+--       `financed_project` -> `id`
+--   `member`
+--       `member` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `financed_project_member`
+--
+
+DROP TABLE IF EXISTS `financed_project_member`;
+CREATE TABLE IF NOT EXISTS `financed_project_member` (
+  `financed_project` int(11) NOT NULL,
+  `member` int(11) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `financed_project_member`:
+--   `created_by`
+--       `user` -> `username`
+--   `financed_project`
+--       `financed_project` -> `id`
+--   `member`
+--       `member` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `funding_body`
+--
+
+DROP TABLE IF EXISTS `funding_body`;
+CREATE TABLE IF NOT EXISTS `funding_body` (
+`id` int(11) NOT NULL,
+  `name` varchar(200) NOT NULL,
+  `web` varchar(200) NOT NULL,
+  `scope` varchar(45) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `updated_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=7 ;
+
+--
+-- RELATIONS FOR TABLE `funding_body`:
+--   `created_by`
+--       `user` -> `username`
+--   `updated_by`
+--       `user` -> `username`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `funding_body_financed_project`
+--
+
+DROP TABLE IF EXISTS `funding_body_financed_project`;
+CREATE TABLE IF NOT EXISTS `funding_body_financed_project` (
+  `funding_body` int(11) NOT NULL,
+  `financed_project` int(11) NOT NULL,
+  `record` varchar(45) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `updated_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `funding_body_financed_project`:
+--   `created_by`
+--       `user` -> `username`
+--   `updated_by`
+--       `user` -> `username`
+--   `funding_body`
+--       `funding_body` -> `id`
+--   `financed_project`
+--       `financed_project` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `member`
+--
+
+DROP TABLE IF EXISTS `member`;
+CREATE TABLE IF NOT EXISTS `member` (
+`id` int(11) NOT NULL,
+  `first_name` varchar(45) NOT NULL,
+  `last_name` varchar(45) NOT NULL,
+  `degree` varchar(45) CHARACTER SET big5 NOT NULL,
+  `year_in` int(11) NOT NULL,
+  `year_out` int(11) NOT NULL,
+  `email` varchar(45) NOT NULL,
+  `cv` varchar(32) NOT NULL DEFAULT '',
+  `photo` varchar(32) NOT NULL DEFAULT '',
+  `created_by` varchar(45) NOT NULL,
+  `updated_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL,
+  `primary_status` int(11) NOT NULL
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=278 ;
+
+--
+-- RELATIONS FOR TABLE `member`:
+--   `created_by`
+--       `user` -> `username`
+--   `updated_by`
+--       `user` -> `username`
+--   `primary_status`
+--       `status` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `member_publication`
+--
+
+DROP TABLE IF EXISTS `member_publication`;
+CREATE TABLE IF NOT EXISTS `member_publication` (
+  `member` int(11) NOT NULL,
+  `publication` int(11) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `member_publication`:
+--   `created_by`
+--       `user` -> `username`
+--   `member`
+--       `member` -> `id`
+--   `publication`
+--       `publication` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `member_status`
+--
+
+DROP TABLE IF EXISTS `member_status`;
+CREATE TABLE IF NOT EXISTS `member_status` (
+  `member` int(11) NOT NULL,
+  `status` int(11) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `member_status`:
+--   `created_by`
+--       `user` -> `username`
+--   `member`
+--       `member` -> `id`
+--   `status`
+--       `status` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `newspaper`
+--
+
+DROP TABLE IF EXISTS `newspaper`;
+CREATE TABLE IF NOT EXISTS `newspaper` (
+`id` int(11) NOT NULL,
+  `name` varchar(200) NOT NULL,
+  `web` varchar(200) NOT NULL,
+  `logo` varchar(32) NOT NULL DEFAULT '',
+  `created_by` varchar(45) NOT NULL,
+  `updated_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=27 ;
+
+--
+-- RELATIONS FOR TABLE `newspaper`:
+--   `created_by`
+--       `user` -> `username`
+--   `updated_by`
+--       `user` -> `username`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `partner`
+--
+
+DROP TABLE IF EXISTS `partner`;
+CREATE TABLE IF NOT EXISTS `partner` (
+`id` int(11) NOT NULL,
+  `name` varchar(45) NOT NULL,
+  `web` varchar(45) NOT NULL,
+  `logo` varchar(32) NOT NULL DEFAULT '',
+  `same_department` tinyint(1) NOT NULL,
+  `scope` varchar(45) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `updated_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='z' AUTO_INCREMENT=54 ;
+
+--
+-- RELATIONS FOR TABLE `partner`:
+--   `created_by`
+--       `user` -> `username`
+--   `updated_by`
+--       `user` -> `username`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `partner_member`
+--
+
+DROP TABLE IF EXISTS `partner_member`;
+CREATE TABLE IF NOT EXISTS `partner_member` (
+  `partner` int(11) NOT NULL,
+  `member` int(11) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `partner_member`:
+--   `created_by`
+--       `user` -> `username`
+--   `partner`
+--       `partner` -> `id`
+--   `member`
+--       `member` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `permission`
+--
+
+DROP TABLE IF EXISTS `permission`;
+CREATE TABLE IF NOT EXISTS `permission` (
+  `id` varchar(64) NOT NULL,
+  `display_name` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `publication`
+--
+
+DROP TABLE IF EXISTS `publication`;
+CREATE TABLE IF NOT EXISTS `publication` (
+`id` int(11) NOT NULL,
+  `title` varchar(200) NOT NULL,
+  `year` int(11) NOT NULL,
+  `book_title` varchar(45) NOT NULL,
+  `chapter` varchar(45) NOT NULL,
+  `city` varchar(45) NOT NULL,
+  `country` varchar(45) NOT NULL,
+  `conference_name` varchar(45) NOT NULL,
+  `edition` varchar(45) NOT NULL,
+  `institution` varchar(45) NOT NULL,
+  `isbn` varchar(45) NOT NULL,
+  `issn` varchar(45) NOT NULL,
+  `journal` varchar(45) NOT NULL,
+  `language` varchar(45) NOT NULL,
+  `nationality` varchar(45) NOT NULL,
+  `number` varchar(45) NOT NULL,
+  `organization` varchar(45) NOT NULL,
+  `pages` varchar(45) NOT NULL,
+  `school` varchar(45) NOT NULL COMMENT '	',
+  `series` varchar(45) NOT NULL,
+  `volume` varchar(45) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `updated_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL,
+  `publication_type` int(11) NOT NULL,
+  `publisher` int(11) NOT NULL,
+  `primary_author` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- RELATIONS FOR TABLE `publication`:
+--   `created_by`
+--       `user` -> `username`
+--   `updated_by`
+--       `user` -> `username`
+--   `publication_type`
+--       `publication_type` -> `id`
+--   `publisher`
+--       `publisher` -> `id`
+--   `primary_author`
+--       `member` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `publication_type`
+--
+
+DROP TABLE IF EXISTS `publication_type`;
+CREATE TABLE IF NOT EXISTS `publication_type` (
+`id` int(11) NOT NULL,
+  `name` varchar(45) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `updated_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=30 ;
+
+--
+-- RELATIONS FOR TABLE `publication_type`:
+--   `created_by`
+--       `user` -> `username`
+--   `updated_by`
+--       `user` -> `username`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `publisher`
+--
+
+DROP TABLE IF EXISTS `publisher`;
+CREATE TABLE IF NOT EXISTS `publisher` (
+`id` int(11) NOT NULL,
+  `name` varchar(200) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `updated_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=29 ;
+
+--
+-- RELATIONS FOR TABLE `publisher`:
+--   `created_by`
+--       `user` -> `username`
+--   `updated_by`
+--       `user` -> `username`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `research_area`
+--
+
+DROP TABLE IF EXISTS `research_area`;
+CREATE TABLE IF NOT EXISTS `research_area` (
+`id` int(11) NOT NULL,
+  `name` varchar(200) NOT NULL,
+  `logo` varchar(32) NOT NULL DEFAULT '',
+  `created_by` varchar(45) NOT NULL,
+  `updated_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=28 ;
+
+--
+-- RELATIONS FOR TABLE `research_area`:
+--   `created_by`
+--       `user` -> `username`
+--   `updated_by`
+--       `user` -> `username`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `research_area_research_line`
+--
+
+DROP TABLE IF EXISTS `research_area_research_line`;
+CREATE TABLE IF NOT EXISTS `research_area_research_line` (
+  `research_area` int(11) NOT NULL,
+  `research_line` int(11) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `research_area_research_line`:
+--   `created_by`
+--       `user` -> `username`
+--   `research_area`
+--       `research_area` -> `id`
+--   `research_line`
+--       `research_line` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `research_line`
+--
+
+DROP TABLE IF EXISTS `research_line`;
+CREATE TABLE IF NOT EXISTS `research_line` (
+`id` int(11) NOT NULL,
+  `title` varchar(200) NOT NULL,
+  `finished` tinyint(1) NOT NULL,
+  `description` text NOT NULL,
+  `logo` varchar(32) NOT NULL DEFAULT '',
+  `created_by` varchar(45) NOT NULL,
+  `updated_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL,
+  `primary_research_area` int(11) NOT NULL
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=76 ;
+
+--
+-- RELATIONS FOR TABLE `research_line`:
+--   `created_by`
+--       `user` -> `username`
+--   `updated_by`
+--       `user` -> `username`
+--   `primary_research_area`
+--       `research_area` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `research_line_article`
+--
+
+DROP TABLE IF EXISTS `research_line_article`;
+CREATE TABLE IF NOT EXISTS `research_line_article` (
+  `research_line` int(11) NOT NULL,
+  `article` int(11) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `research_line_article`:
+--   `created_by`
+--       `user` -> `username`
+--   `research_line`
+--       `research_line` -> `id`
+--   `article`
+--       `article` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `research_line_financed_project`
+--
+
+DROP TABLE IF EXISTS `research_line_financed_project`;
+CREATE TABLE IF NOT EXISTS `research_line_financed_project` (
+  `research_line` int(11) NOT NULL,
+  `financed_project` int(11) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `research_line_financed_project`:
+--   `created_by`
+--       `user` -> `username`
+--   `research_line`
+--       `research_line` -> `id`
+--   `financed_project`
+--       `financed_project` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `research_line_member`
+--
+
+DROP TABLE IF EXISTS `research_line_member`;
+CREATE TABLE IF NOT EXISTS `research_line_member` (
+  `research_line` int(11) NOT NULL,
+  `member` int(11) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `research_line_member`:
+--   `created_by`
+--       `user` -> `username`
+--   `research_line`
+--       `research_line` -> `id`
+--   `member`
+--       `member` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `research_line_partner`
+--
+
+DROP TABLE IF EXISTS `research_line_partner`;
+CREATE TABLE IF NOT EXISTS `research_line_partner` (
+  `research_line` int(11) NOT NULL,
+  `partner` int(11) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `research_line_partner`:
+--   `created_by`
+--       `user` -> `username`
+--   `research_line`
+--       `research_line` -> `id`
+--   `partner`
+--       `partner` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `research_line_publication`
+--
+
+DROP TABLE IF EXISTS `research_line_publication`;
+CREATE TABLE IF NOT EXISTS `research_line_publication` (
+  `research_line` int(11) NOT NULL,
+  `publication` int(11) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `research_line_publication`:
+--   `created_by`
+--       `user` -> `username`
+--   `research_line`
+--       `research_line` -> `id`
+--   `publication`
+--       `publication` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `research_line_resource`
+--
+
+DROP TABLE IF EXISTS `research_line_resource`;
+CREATE TABLE IF NOT EXISTS `research_line_resource` (
+  `research_line` int(11) NOT NULL,
+  `resource` varchar(32) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `research_line_resource`:
+--   `created_by`
+--       `user` -> `username`
+--   `research_line`
+--       `research_line` -> `id`
+--   `resource`
+--       `resource` -> `filename_hash`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `research_line_student_work`
+--
+
+DROP TABLE IF EXISTS `research_line_student_work`;
+CREATE TABLE IF NOT EXISTS `research_line_student_work` (
+  `research_line` int(11) NOT NULL,
+  `student_work` int(11) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `research_line_student_work`:
+--   `created_by`
+--       `user` -> `username`
+--   `research_line`
+--       `research_line` -> `id`
+--   `student_work`
+--       `student_work` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `resource`
+--
+
+DROP TABLE IF EXISTS `resource`;
+CREATE TABLE IF NOT EXISTS `resource` (
+  `filename_hash` varchar(32) NOT NULL,
+  `filename` varchar(45) NOT NULL,
+  `mime_type` varchar(45) NOT NULL,
+  `size` int(11) NOT NULL,
+  `private` tinyint(1) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `updated_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `resource`:
+--   `created_by`
+--       `user` -> `username`
+--   `updated_by`
+--       `user` -> `username`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `rol`
+--
+
+DROP TABLE IF EXISTS `rol`;
+CREATE TABLE IF NOT EXISTS `rol` (
+  `id` varchar(45) NOT NULL,
+  `display_name` varchar(45) NOT NULL,
+  `description` varchar(200) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `rol_permission`
+--
+
+DROP TABLE IF EXISTS `rol_permission`;
+CREATE TABLE IF NOT EXISTS `rol_permission` (
+  `rol` varchar(45) NOT NULL,
+  `permission` varchar(64) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `rol_permission`:
+--   `rol`
+--       `rol` -> `id`
+--   `permission`
+--       `permission` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `status`
+--
+
+DROP TABLE IF EXISTS `status`;
+CREATE TABLE IF NOT EXISTS `status` (
+`id` int(11) NOT NULL,
+  `name` varchar(45) NOT NULL,
+  `description` varchar(200) NOT NULL,
+  `created_by` varchar(45) NOT NULL COMMENT '	',
+  `updated_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=133 ;
+
+--
+-- RELATIONS FOR TABLE `status`:
+--   `created_by`
+--       `user` -> `username`
+--   `updated_by`
+--       `user` -> `username`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `student_work`
+--
+
+DROP TABLE IF EXISTS `student_work`;
+CREATE TABLE IF NOT EXISTS `student_work` (
+`id` int(11) NOT NULL,
+  `title` varchar(200) NOT NULL,
+  `year` int(11) NOT NULL,
+  `school` varchar(200) NOT NULL,
+  `volume` varchar(45) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `updated_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL,
+  `student_work_type` int(11) NOT NULL,
+  `author` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- RELATIONS FOR TABLE `student_work`:
+--   `created_by`
+--       `user` -> `username`
+--   `updated_by`
+--       `user` -> `username`
+--   `student_work_type`
+--       `student_work_type` -> `id`
+--   `author`
+--       `member` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `student_work_type`
+--
+
+DROP TABLE IF EXISTS `student_work_type`;
+CREATE TABLE IF NOT EXISTS `student_work_type` (
+`id` int(11) NOT NULL,
+  `name` varchar(45) NOT NULL,
+  `created_by` varchar(45) NOT NULL,
+  `updated_by` varchar(45) NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=39 ;
+
+--
+-- RELATIONS FOR TABLE `student_work_type`:
+--   `created_by`
+--       `user` -> `username`
+--   `updated_by`
+--       `user` -> `username`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `timestamps`
+--
+
+DROP TABLE IF EXISTS `timestamps`;
+CREATE TABLE IF NOT EXISTS `timestamps` (
+  `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ugroup`
+--
+
+DROP TABLE IF EXISTS `ugroup`;
+CREATE TABLE IF NOT EXISTS `ugroup` (
+  `id` varchar(45) NOT NULL,
+  `display_name` varchar(45) NOT NULL,
+  `rol` varchar(45) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `ugroup`:
+--   `rol`
+--       `rol` -> `id`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user`
+--
+
+DROP TABLE IF EXISTS `user`;
+CREATE TABLE IF NOT EXISTS `user` (
+  `username` varchar(45) NOT NULL,
+  `email` varchar(45) NOT NULL,
+  `password` varchar(60) NOT NULL,
+  `enabled` tinyint(1) NOT NULL,
+  `display_name` varchar(45) NOT NULL,
+  `ugroup` varchar(45) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- RELATIONS FOR TABLE `user`:
+--   `ugroup`
+--       `ugroup` -> `id`
+--
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `article`
+--
+ALTER TABLE `article`
+ ADD PRIMARY KEY (`id`), ADD KEY `fk_article_1_idx` (`created_by`), ADD KEY `fk_article_2_idx` (`updated_by`), ADD KEY `fk_article_3_idx` (`newspaper`);
+
+--
+-- Indexes for table `category`
+--
+ALTER TABLE `category`
+ ADD PRIMARY KEY (`id`), ADD KEY `fk_resource_type_1_idx` (`created_by`), ADD KEY `fk_resource_type_2_idx` (`updated_by`);
+
+--
+-- Indexes for table `category_resource`
+--
+ALTER TABLE `category_resource`
+ ADD PRIMARY KEY (`category`,`resource`), ADD KEY `fk_category_resource_1_idx` (`created_by`), ADD KEY `fk_category_resource_3_idx` (`resource`);
+
+--
+-- Indexes for table `config`
+--
+ALTER TABLE `config`
+ ADD PRIMARY KEY (`config_key`);
+
+--
+-- Indexes for table `financed_project`
+--
+ALTER TABLE `financed_project`
+ ADD PRIMARY KEY (`id`), ADD KEY `fk_financed_project_1_idx` (`created_by`), ADD KEY `fk_financed_project_2_idx` (`updated_by`), ADD KEY `fk_financed_project_4_idx` (`primary_leader`), ADD KEY `fk_financed_project_3_idx` (`primary_funding_body`);
+
+--
+-- Indexes for table `financed_project_leader`
+--
+ALTER TABLE `financed_project_leader`
+ ADD PRIMARY KEY (`financed_project`,`member`), ADD KEY `fk_financed_project_leader_1_idx` (`created_by`), ADD KEY `fk_financed_project_leader_3_idx` (`member`);
+
+--
+-- Indexes for table `financed_project_member`
+--
+ALTER TABLE `financed_project_member`
+ ADD PRIMARY KEY (`financed_project`,`member`), ADD KEY `fk_financed_project_member_1_idx` (`created_by`), ADD KEY `fk_financed_project_member_3_idx` (`member`);
+
+--
+-- Indexes for table `funding_body`
+--
+ALTER TABLE `funding_body`
+ ADD PRIMARY KEY (`id`), ADD KEY `fk_funding_body_1_idx` (`created_by`), ADD KEY `fk_funding_body_2_idx` (`updated_by`);
+
+--
+-- Indexes for table `funding_body_financed_project`
+--
+ALTER TABLE `funding_body_financed_project`
+ ADD PRIMARY KEY (`funding_body`,`financed_project`), ADD KEY `fk_funding_body_financed_project_1_idx` (`created_by`), ADD KEY `fk_funding_body_financed_project_2_idx` (`updated_by`), ADD KEY `fk_funding_body_financed_project_4_idx` (`financed_project`);
+
+--
+-- Indexes for table `member`
+--
+ALTER TABLE `member`
+ ADD PRIMARY KEY (`id`), ADD KEY `fk_member_1_idx` (`created_by`), ADD KEY `fk_member_2_idx` (`updated_by`), ADD KEY `fk_member_3_idx` (`primary_status`);
+
+--
+-- Indexes for table `member_publication`
+--
+ALTER TABLE `member_publication`
+ ADD PRIMARY KEY (`member`,`publication`), ADD KEY `fk_member_publication_1_idx` (`created_by`), ADD KEY `fk_member_publication_3_idx` (`publication`);
+
+--
+-- Indexes for table `member_status`
+--
+ALTER TABLE `member_status`
+ ADD PRIMARY KEY (`member`,`status`), ADD KEY `fk_member_status_1_idx` (`created_by`), ADD KEY `fk_member_status_3_idx` (`status`);
+
+--
+-- Indexes for table `newspaper`
+--
+ALTER TABLE `newspaper`
+ ADD PRIMARY KEY (`id`), ADD KEY `fk_newspaper_1_idx` (`created_by`), ADD KEY `fk_newspaper_2_idx` (`updated_by`);
+
+--
+-- Indexes for table `partner`
+--
+ALTER TABLE `partner`
+ ADD PRIMARY KEY (`id`), ADD KEY `fk_partner_1_idx` (`created_by`), ADD KEY `fk_partner_2_idx` (`updated_by`);
+
+--
+-- Indexes for table `partner_member`
+--
+ALTER TABLE `partner_member`
+ ADD PRIMARY KEY (`partner`,`member`), ADD KEY `fk_partner_member_1_idx` (`created_by`), ADD KEY `fk_partner_member_3_idx` (`member`);
+
+--
+-- Indexes for table `permission`
+--
+ALTER TABLE `permission`
+ ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `publication`
+--
+ALTER TABLE `publication`
+ ADD PRIMARY KEY (`id`), ADD KEY `fk_publication_1_idx` (`created_by`), ADD KEY `fk_publication_2_idx` (`updated_by`), ADD KEY `fk_publication_3_idx` (`publication_type`), ADD KEY `fk_publication_4_idx` (`publisher`), ADD KEY `fk_publication_5_idx` (`primary_author`);
+
+--
+-- Indexes for table `publication_type`
+--
+ALTER TABLE `publication_type`
+ ADD PRIMARY KEY (`id`), ADD KEY `fk_publication_type_1_idx` (`created_by`), ADD KEY `fk_publication_type_2_idx` (`updated_by`);
+
+--
+-- Indexes for table `publisher`
+--
+ALTER TABLE `publisher`
+ ADD PRIMARY KEY (`id`), ADD KEY `fk_publisher_1_idx` (`created_by`), ADD KEY `fk_publisher_2_idx` (`updated_by`);
+
+--
+-- Indexes for table `research_area`
+--
+ALTER TABLE `research_area`
+ ADD PRIMARY KEY (`id`), ADD KEY `fk_research_area_1_idx` (`created_by`), ADD KEY `fk_research_area_2_idx` (`updated_by`);
+
+--
+-- Indexes for table `research_area_research_line`
+--
+ALTER TABLE `research_area_research_line`
+ ADD PRIMARY KEY (`research_area`,`research_line`), ADD KEY `fk_research_area_research_line_1_idx` (`created_by`), ADD KEY `fk_research_area_research_line_3_idx` (`research_line`);
+
+--
+-- Indexes for table `research_line`
+--
+ALTER TABLE `research_line`
+ ADD PRIMARY KEY (`id`), ADD KEY `fk_research_line_1_idx` (`created_by`), ADD KEY `fk_research_line_2_idx` (`updated_by`), ADD KEY `fk_research_line_3_idx` (`primary_research_area`);
+
+--
+-- Indexes for table `research_line_article`
+--
+ALTER TABLE `research_line_article`
+ ADD PRIMARY KEY (`research_line`,`article`), ADD KEY `fk_research_line_article_1_idx` (`created_by`), ADD KEY `fk_research_line_article_3_idx` (`article`);
+
+--
+-- Indexes for table `research_line_financed_project`
+--
+ALTER TABLE `research_line_financed_project`
+ ADD PRIMARY KEY (`research_line`,`financed_project`), ADD KEY `fk_research_line_financed_project_1_idx` (`created_by`), ADD KEY `fk_research_line_financed_project_3_idx` (`financed_project`);
+
+--
+-- Indexes for table `research_line_member`
+--
+ALTER TABLE `research_line_member`
+ ADD PRIMARY KEY (`research_line`,`member`), ADD KEY `fk_research_line_member_1_idx` (`created_by`), ADD KEY `fk_research_line_member_3_idx` (`member`);
+
+--
+-- Indexes for table `research_line_partner`
+--
+ALTER TABLE `research_line_partner`
+ ADD PRIMARY KEY (`research_line`,`partner`), ADD KEY `fk_research_line_partner_1_idx` (`created_by`), ADD KEY `fk_research_line_partner_3_idx` (`partner`);
+
+--
+-- Indexes for table `research_line_publication`
+--
+ALTER TABLE `research_line_publication`
+ ADD PRIMARY KEY (`research_line`,`publication`), ADD KEY `fk_research_line_publication_1_idx` (`created_by`), ADD KEY `fk_research_line_publication_3_idx` (`publication`);
+
+--
+-- Indexes for table `research_line_resource`
+--
+ALTER TABLE `research_line_resource`
+ ADD PRIMARY KEY (`research_line`,`resource`), ADD KEY `fk_research_line_resource_1_idx` (`created_by`), ADD KEY `fk_research_line_resource_3_idx` (`resource`);
+
+--
+-- Indexes for table `research_line_student_work`
+--
+ALTER TABLE `research_line_student_work`
+ ADD PRIMARY KEY (`research_line`,`student_work`), ADD KEY `fk_research_line_student_work_1_idx` (`created_by`), ADD KEY `fk_research_line_student_work_3_idx` (`student_work`);
+
+--
+-- Indexes for table `resource`
+--
+ALTER TABLE `resource`
+ ADD PRIMARY KEY (`filename_hash`), ADD KEY `fk_resource_1_idx` (`created_by`), ADD KEY `fk_resource_2_idx` (`updated_by`);
+
+--
+-- Indexes for table `rol`
+--
+ALTER TABLE `rol`
+ ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `rol_permission`
+--
+ALTER TABLE `rol_permission`
+ ADD PRIMARY KEY (`rol`,`permission`), ADD KEY `fk_rol_permission_3_idx` (`permission`);
+
+--
+-- Indexes for table `status`
+--
+ALTER TABLE `status`
+ ADD PRIMARY KEY (`id`), ADD KEY `fk_status_1_idx` (`created_by`), ADD KEY `fk_status_2_idx` (`updated_by`);
+
+--
+-- Indexes for table `student_work`
+--
+ALTER TABLE `student_work`
+ ADD PRIMARY KEY (`id`), ADD KEY `fk_student_work_1_idx` (`created_by`), ADD KEY `fk_student_work_2_idx` (`updated_by`), ADD KEY `fk_student_work_3_idx` (`student_work_type`), ADD KEY `fk_student_work_4_idx` (`author`);
+
+--
+-- Indexes for table `student_work_type`
+--
+ALTER TABLE `student_work_type`
+ ADD PRIMARY KEY (`id`), ADD KEY `fk_student_work_type_1_idx` (`created_by`), ADD KEY `fk_student_work_type_2_idx` (`updated_by`);
+
+--
+-- Indexes for table `ugroup`
+--
+ALTER TABLE `ugroup`
+ ADD PRIMARY KEY (`id`), ADD KEY `fk_ugroup_rol_idx` (`rol`);
+
+--
+-- Indexes for table `user`
+--
+ALTER TABLE `user`
+ ADD PRIMARY KEY (`username`), ADD KEY `fk_user_ugroup_ugroup_idx` (`ugroup`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `article`
+--
+ALTER TABLE `article`
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=194;
+--
+-- AUTO_INCREMENT for table `category`
+--
+ALTER TABLE `category`
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `financed_project`
+--
+ALTER TABLE `financed_project`
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=9;
+--
+-- AUTO_INCREMENT for table `funding_body`
+--
+ALTER TABLE `funding_body`
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=7;
+--
+-- AUTO_INCREMENT for table `member`
+--
+ALTER TABLE `member`
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=278;
+--
+-- AUTO_INCREMENT for table `newspaper`
+--
+ALTER TABLE `newspaper`
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=27;
+--
+-- AUTO_INCREMENT for table `partner`
+--
+ALTER TABLE `partner`
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=54;
+--
+-- AUTO_INCREMENT for table `publication`
+--
+ALTER TABLE `publication`
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `publication_type`
+--
+ALTER TABLE `publication_type`
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=30;
+--
+-- AUTO_INCREMENT for table `publisher`
+--
+ALTER TABLE `publisher`
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=29;
+--
+-- AUTO_INCREMENT for table `research_area`
+--
+ALTER TABLE `research_area`
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=28;
+--
+-- AUTO_INCREMENT for table `research_line`
+--
+ALTER TABLE `research_line`
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=76;
+--
+-- AUTO_INCREMENT for table `status`
+--
+ALTER TABLE `status`
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=133;
+--
+-- AUTO_INCREMENT for table `student_work`
+--
+ALTER TABLE `student_work`
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `student_work_type`
+--
+ALTER TABLE `student_work_type`
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=39;
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `article`
+--
+ALTER TABLE `article`
+ADD CONSTRAINT `fk_article_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_article_2` FOREIGN KEY (`updated_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_article_3` FOREIGN KEY (`newspaper`) REFERENCES `newspaper` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `category`
+--
+ALTER TABLE `category`
+ADD CONSTRAINT `fk_resource_type_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_resource_type_2` FOREIGN KEY (`updated_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `category_resource`
+--
+ALTER TABLE `category_resource`
+ADD CONSTRAINT `fk_category_resource_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_category_resource_2` FOREIGN KEY (`category`) REFERENCES `category` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_category_resource_3` FOREIGN KEY (`resource`) REFERENCES `resource` (`filename_hash`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `financed_project`
+--
+ALTER TABLE `financed_project`
+ADD CONSTRAINT `fk_financed_project_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_financed_project_2` FOREIGN KEY (`updated_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_financed_project_3` FOREIGN KEY (`primary_funding_body`) REFERENCES `funding_body` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_financed_project_4` FOREIGN KEY (`primary_leader`) REFERENCES `member` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `financed_project_leader`
+--
+ALTER TABLE `financed_project_leader`
+ADD CONSTRAINT `fk_financed_project_leader_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_financed_project_leader_2` FOREIGN KEY (`financed_project`) REFERENCES `financed_project` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_financed_project_leader_3` FOREIGN KEY (`member`) REFERENCES `member` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `financed_project_member`
+--
+ALTER TABLE `financed_project_member`
+ADD CONSTRAINT `fk_financed_project_member_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_financed_project_member_2` FOREIGN KEY (`financed_project`) REFERENCES `financed_project` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_financed_project_member_3` FOREIGN KEY (`member`) REFERENCES `member` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `funding_body`
+--
+ALTER TABLE `funding_body`
+ADD CONSTRAINT `fk_funding_body_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_funding_body_2` FOREIGN KEY (`updated_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `funding_body_financed_project`
+--
+ALTER TABLE `funding_body_financed_project`
+ADD CONSTRAINT `fk_funding_body_financed_project_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_funding_body_financed_project_2` FOREIGN KEY (`updated_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_funding_body_financed_project_3` FOREIGN KEY (`funding_body`) REFERENCES `funding_body` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_funding_body_financed_project_4` FOREIGN KEY (`financed_project`) REFERENCES `financed_project` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `member`
+--
+ALTER TABLE `member`
+ADD CONSTRAINT `fk_member_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_member_2` FOREIGN KEY (`updated_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_member_3` FOREIGN KEY (`primary_status`) REFERENCES `status` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `member_publication`
+--
+ALTER TABLE `member_publication`
+ADD CONSTRAINT `fk_member_publication_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_member_publication_2` FOREIGN KEY (`member`) REFERENCES `member` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_member_publication_3` FOREIGN KEY (`publication`) REFERENCES `publication` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `member_status`
+--
+ALTER TABLE `member_status`
+ADD CONSTRAINT `fk_member_status_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_member_status_2` FOREIGN KEY (`member`) REFERENCES `member` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_member_status_3` FOREIGN KEY (`status`) REFERENCES `status` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `newspaper`
+--
+ALTER TABLE `newspaper`
+ADD CONSTRAINT `fk_newspaper_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_newspaper_2` FOREIGN KEY (`updated_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `partner`
+--
+ALTER TABLE `partner`
+ADD CONSTRAINT `fk_partner_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_partner_2` FOREIGN KEY (`updated_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `partner_member`
+--
+ALTER TABLE `partner_member`
+ADD CONSTRAINT `fk_partner_member_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_partner_member_2` FOREIGN KEY (`partner`) REFERENCES `partner` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_partner_member_3` FOREIGN KEY (`member`) REFERENCES `member` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `publication`
+--
+ALTER TABLE `publication`
+ADD CONSTRAINT `fk_publication_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_publication_2` FOREIGN KEY (`updated_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_publication_3` FOREIGN KEY (`publication_type`) REFERENCES `publication_type` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_publication_4` FOREIGN KEY (`publisher`) REFERENCES `publisher` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_publication_5` FOREIGN KEY (`primary_author`) REFERENCES `member` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `publication_type`
+--
+ALTER TABLE `publication_type`
+ADD CONSTRAINT `fk_publication_type_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_publication_type_2` FOREIGN KEY (`updated_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `publisher`
+--
+ALTER TABLE `publisher`
+ADD CONSTRAINT `fk_publisher_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_publisher_2` FOREIGN KEY (`updated_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `research_area`
+--
+ALTER TABLE `research_area`
+ADD CONSTRAINT `fk_research_area_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_research_area_2` FOREIGN KEY (`updated_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `research_area_research_line`
+--
+ALTER TABLE `research_area_research_line`
+ADD CONSTRAINT `fk_research_area_research_line_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_research_area_research_line_2` FOREIGN KEY (`research_area`) REFERENCES `research_area` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_research_area_research_line_3` FOREIGN KEY (`research_line`) REFERENCES `research_line` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `research_line`
+--
+ALTER TABLE `research_line`
+ADD CONSTRAINT `fk_research_line_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_research_line_2` FOREIGN KEY (`updated_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_research_line_3` FOREIGN KEY (`primary_research_area`) REFERENCES `research_area` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `research_line_article`
+--
+ALTER TABLE `research_line_article`
+ADD CONSTRAINT `fk_research_line_article_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_research_line_article_2` FOREIGN KEY (`research_line`) REFERENCES `research_line` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_research_line_article_3` FOREIGN KEY (`article`) REFERENCES `article` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `research_line_financed_project`
+--
+ALTER TABLE `research_line_financed_project`
+ADD CONSTRAINT `fk_research_line_financed_project_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_research_line_financed_project_2` FOREIGN KEY (`research_line`) REFERENCES `research_line` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_research_line_financed_project_3` FOREIGN KEY (`financed_project`) REFERENCES `financed_project` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `research_line_member`
+--
+ALTER TABLE `research_line_member`
+ADD CONSTRAINT `fk_research_line_member_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_research_line_member_2` FOREIGN KEY (`research_line`) REFERENCES `research_line` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_research_line_member_3` FOREIGN KEY (`member`) REFERENCES `member` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `research_line_partner`
+--
+ALTER TABLE `research_line_partner`
+ADD CONSTRAINT `fk_research_line_partner_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_research_line_partner_2` FOREIGN KEY (`research_line`) REFERENCES `research_line` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_research_line_partner_3` FOREIGN KEY (`partner`) REFERENCES `partner` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `research_line_publication`
+--
+ALTER TABLE `research_line_publication`
+ADD CONSTRAINT `fk_research_line_publication_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_research_line_publication_2` FOREIGN KEY (`research_line`) REFERENCES `research_line` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_research_line_publication_3` FOREIGN KEY (`publication`) REFERENCES `publication` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `research_line_resource`
+--
+ALTER TABLE `research_line_resource`
+ADD CONSTRAINT `fk_research_line_resource_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_research_line_resource_2` FOREIGN KEY (`research_line`) REFERENCES `research_line` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_research_line_resource_3` FOREIGN KEY (`resource`) REFERENCES `resource` (`filename_hash`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `research_line_student_work`
+--
+ALTER TABLE `research_line_student_work`
+ADD CONSTRAINT `fk_research_line_student_work_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_research_line_student_work_2` FOREIGN KEY (`research_line`) REFERENCES `research_line` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_research_line_student_work_3` FOREIGN KEY (`student_work`) REFERENCES `student_work` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `resource`
+--
+ALTER TABLE `resource`
+ADD CONSTRAINT `fk_resource_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_resource_2` FOREIGN KEY (`updated_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `rol_permission`
+--
+ALTER TABLE `rol_permission`
+ADD CONSTRAINT `fk_rol_permission_2` FOREIGN KEY (`rol`) REFERENCES `rol` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_rol_permission_3` FOREIGN KEY (`permission`) REFERENCES `permission` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `status`
+--
+ALTER TABLE `status`
+ADD CONSTRAINT `fk_status_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_status_2` FOREIGN KEY (`updated_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `student_work`
+--
+ALTER TABLE `student_work`
+ADD CONSTRAINT `fk_student_work_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_student_work_2` FOREIGN KEY (`updated_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_student_work_3` FOREIGN KEY (`student_work_type`) REFERENCES `student_work_type` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+ADD CONSTRAINT `fk_student_work_4` FOREIGN KEY (`author`) REFERENCES `member` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `student_work_type`
+--
+ALTER TABLE `student_work_type`
+ADD CONSTRAINT `fk_student_work_type_1` FOREIGN KEY (`created_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_student_work_type_2` FOREIGN KEY (`updated_by`) REFERENCES `user` (`username`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Constraints for table `ugroup`
+--
+ALTER TABLE `ugroup`
+ADD CONSTRAINT `fk_ugroup_rol` FOREIGN KEY (`rol`) REFERENCES `rol` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `user`
+--
+ALTER TABLE `user`
+ADD CONSTRAINT `fk_user_ugroup_ugroup` FOREIGN KEY (`ugroup`) REFERENCES `ugroup` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 
